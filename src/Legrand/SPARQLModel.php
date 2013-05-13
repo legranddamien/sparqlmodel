@@ -25,7 +25,7 @@ use Illuminate\Support\Contracts\JsonableInterface;
 use Illuminate\Support\Contracts\ArrayableInterface;
 use Legrand\SPARQL;
 
-class VirtuosoModel implements JsonableInterface, ArrayableInterface {
+class SPARQLModel implements JsonableInterface, ArrayableInterface {
 
         protected static $mapping       = [];
         protected static $multiMapping  = [];
