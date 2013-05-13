@@ -1,0 +1,22 @@
+{
+    "name": "legrand/sparqlmodel",
+    "type": "library",
+    "description": "A model for Laravel 4, that can manage object through a graph database using SPARQL endpoint.",
+    "keywords": ["sparql", "semantic web", "database", "model", "laravel"],
+    "homepage": "http://github.com/snoozeman/sparqlmodel",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Damien Legrand",
+            "email": "legrand.damien.06@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=5.3.0",
+        "legrand/sparql": "dev-master",
+        "illuminate/support": "4.0.*@dev"
+    },
+    "autoload": {
+        "psr-0": {"Legrand": "src/"}
+    }
+}
