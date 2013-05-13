@@ -23,8 +23,8 @@ namespace Legrand;
 
 use Illuminate\Support\Contracts\JsonableInterface;
 use Illuminate\Support\Contracts\ArrayableInterface;
+use Illuminate\Support\Facades\Config;
 use Legrand\SPARQL;
-use Illuminate\Config;
 
 class SPARQLModel implements JsonableInterface, ArrayableInterface {
 
