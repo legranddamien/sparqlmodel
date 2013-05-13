@@ -16,7 +16,7 @@ namespace Legrand;
 
 /**
 *
-* This class help to get content by using a SPARQL endpoint
+* A model for Laravel 4, that can manage object through a graph database using SPARQL endpoint.
 *
 * @author Damien Legrand  < http://damienlegrand.com >
 */
@@ -41,7 +41,7 @@ class SPARQLModel implements JsonableInterface, ArrayableInterface {
                 if($this->identifier == null || $this->identifier == "") throw new Exception('The identifier has no value');
 
                 $sparql = new SPARQL();
-                $sparql->baseUrl = Config::get('api.virtuoso');
+                $sparql->baseUrl = Config::get('api.endpoint');
 
                 $filter = "?uri = <".$this->identifier."> && (";
                 $first = true;
@@ -116,7 +116,7 @@ class SPARQLModel implements JsonableInterface, ArrayableInterface {
                         $array = [];
 
                         $sparql = new SPARQL();
-                        $sparql->baseUrl = Config::get('api.virtuoso');
+                        $sparql->baseUrl = Config::get('api.endpoint');
 
                         $elementMapping = call_user_func([$v['mapping'], 'getMapping']);
 
@@ -188,7 +188,7 @@ class SPARQLModel implements JsonableInterface, ArrayableInterface {
                     $filter .= " || ?x = <http://semreco/property/updated>";
 
                     $sparqlD = new SPARQL();
-                    $sparqlD->baseUrl = Config::get('api.virtuoso');
+                    $sparqlD->baseUrl = Config::get('api.endpoint');
 
                     $sparqlD->delete(Config::get('api.graph'), '<' . $this->identifier . '> ?x ?y')
                             ->where('<' . $this->identifier . '>', '?x', '?y')
@@ -205,7 +205,7 @@ class SPARQLModel implements JsonableInterface, ArrayableInterface {
                 $this->identifier = $this->generateID();
 
                 $sparql = new SPARQL();
-                $sparql->baseUrl = Config::get('api.virtuoso');
+                $sparql->baseUrl = Config::get('api.endpoint');
 
                 $sparql->insert(Config::get('api.graph'));
 
@@ -245,7 +245,7 @@ class SPARQLModel implements JsonableInterface, ArrayableInterface {
                 if(!$this->inStore) return;
 
                 $sparql = new SPARQL();
-                $sparql->baseUrl = Config::get('api.virtuoso');
+                $sparql->baseUrl = Config::get('api.endpoint');
 
                 if(!$logicDelete)
                 {
@@ -265,7 +265,7 @@ class SPARQLModel implements JsonableInterface, ArrayableInterface {
                 if($logicDelete)
                 {
                     $sparql2 = new SPARQL();
-                    $sparql2->baseUrl = Config::get('api.virtuoso');
+                    $sparql2->baseUrl = Config::get('api.endpoint');
                     $sparql2->insert(Config::get('api.graph'))
                             ->where('<' . $this->identifier . '>', '<http://semreco/property/status>', 2)->launch();
                 }
@@ -292,7 +292,7 @@ class SPARQLModel implements JsonableInterface, ArrayableInterface {
                 if($map == null) return;
 
                 $sparql = new SPARQL();
-                $sparql->baseUrl = Config::get('api.virtuoso');
+                $sparql->baseUrl = Config::get('api.endpoint');
                 $sparql->insert(Config::get('api.graph'))
                         ->where('<' . $this->identifier . '>', '<' . $map . '>', '<' . $object->identifier . '>')
                         ->launch();
