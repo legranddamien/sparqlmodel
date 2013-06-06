@@ -30,9 +30,11 @@ class SPARQLModel implements JsonableInterface, ArrayableInterface {
 
         protected static $mapping       = [];
         protected static $multiMapping  = [];
+
         protected static $baseURI       = null;
         protected static $type          = null;
         protected static $status        = true;
+
         public $identifier              = null;
         public $inStore                 = false;
 
@@ -41,7 +43,7 @@ class SPARQLModel implements JsonableInterface, ArrayableInterface {
                 if($this->identifier == null || $this->identifier == "") throw new Exception('The identifier has no value');
 
                 $sparql = new SPARQL();
-                $sparql->baseUrl = Config::get('api.endpoint');
+                $sparql->baseUrl = Config::get('sparqlmodel.endpoint');
 
                 $filter = "?uri = <".$this->identifier."> && (";
                 $first = true;
@@ -55,11 +57,16 @@ class SPARQLModel implements JsonableInterface, ArrayableInterface {
 
                 $filter .= ")";
 
-                $sparql->select(Config::get('api.graph'))->where('?uri', '?property', '?value');
+                $sparql->select(Config::get('sparqlmodel.graph'))->where('?uri', '?property', '?value');
 
-                if($this::$status) $sparql->where('?uri', '<http://semreco/property/status>', 1);
+                if($this::$status) $sparql->where('?uri', '<' . Config::get('sparqlmodel.status') . '>', 1);
 
                 $data = $sparql->filter($filter)->launch();
+
+                if(!isset($data['results']) || !isset($data['results']['bindings']))
+                {
+                    return;
+                }
 
                 foreach ($data['results']['bindings'] as $value) 
                 {
@@ -116,11 +123,11 @@ class SPARQLModel implements JsonableInterface, ArrayableInterface {
                         $array = [];
 
                         $sparql = new SPARQL();
-                        $sparql->baseUrl = Config::get('api.endpoint');
+                        $sparql->baseUrl = Config::get('sparqlmodel.endpoint');
 
                         $elementMapping = call_user_func([$v['mapping'], 'getMapping']);
 
-                        $sparql->select(Config::get('api.graph'))->distinct(true)
+                        $sparql->select(Config::get('sparqlmodel.graph'))->distinct(true)
                                         ->where('<'.$this->identifier.'>', "<$k>", '?uri');
 
                         foreach ($elementMapping as $uri => $p) 
@@ -172,7 +179,7 @@ class SPARQLModel implements JsonableInterface, ArrayableInterface {
                     $filter = "";
                     foreach ($this::$mapping as $uri => $property) 
                     {
-                            if(isset($this->$property) && ($uri != "http://semreco/property/created" || $uri != "http://semreco/property/updated"))
+                            if(isset($this->$property) && ($uri != Config::get('sparqlmodel.created') || $uri != Config::get('sparqlmodel.updated')))
                             { 
                                 if($filter != "") $filter .= " || ";
                                 $filter .= "?x = <$uri>";
@@ -185,12 +192,12 @@ class SPARQLModel implements JsonableInterface, ArrayableInterface {
                             $filter .= "?x = <$uri>";
                     }
 
-                    $filter .= " || ?x = <http://semreco/property/updated>";
+                    $filter .= " || ?x = <" . Config::get('sparqlmodel.updated') . ">";
 
                     $sparqlD = new SPARQL();
-                    $sparqlD->baseUrl = Config::get('api.endpoint');
+                    $sparqlD->baseUrl = Config::get('sparqlmodel.endpoint');
 
-                    $sparqlD->delete(Config::get('api.graph'), '<' . $this->identifier . '> ?x ?y')
+                    $sparqlD->delete(Config::get('sparqlmodel.graph'), '<' . $this->identifier . '> ?x ?y')
                             ->where('<' . $this->identifier . '>', '?x', '?y')
                             ->filter($filter)
                             ->launch();
@@ -205,9 +212,9 @@ class SPARQLModel implements JsonableInterface, ArrayableInterface {
                 $this->identifier = $this->generateID();
 
                 $sparql = new SPARQL();
-                $sparql->baseUrl = Config::get('api.endpoint');
+                $sparql->baseUrl = Config::get('sparqlmodel.endpoint');
 
-                $sparql->insert(Config::get('api.graph'));
+                $sparql->insert(Config::get('sparqlmodel.graph'));
 
                 foreach ($this::$mapping as $uri => $property) 
                 {
@@ -226,12 +233,12 @@ class SPARQLModel implements JsonableInterface, ArrayableInterface {
 
                 if($this::$type != null) $sparql->where('<' . $this->identifier . '>', '<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>', '<'.$this::$type.'>');
 
-                if($this::$status) $sparql->where('<' . $this->identifier . '>', '<http://semreco/property/status>', 1);
+                if($this::$status) $sparql->where('<' . $this->identifier . '>', '<' . Config::get('sparqlmodel.status') . '>', 1);
 
                 $date = date('Y-m-d H:i:s', time());
 
-                if(!$this->inStore) $sparql->where('<' . $this->identifier . '>', '<http://semreco/property/created>', "'".$date."'");
-                $sparql->where('<' . $this->identifier . '>', '<http://semreco/property/updated>', "'".$date."'");
+                if(!$this->inStore) $sparql->where('<' . $this->identifier . '>', '<' . Config::get('sparqlmodel.created') . '>', "'".$date."'");
+                $sparql->where('<' . $this->identifier . '>', '<' . Config::get('sparqlmodel.updated') . '>', "'".$date."'");
 
                 $data = $sparql->launch();
 
@@ -245,19 +252,19 @@ class SPARQLModel implements JsonableInterface, ArrayableInterface {
                 if(!$this->inStore) return;
 
                 $sparql = new SPARQL();
-                $sparql->baseUrl = Config::get('api.endpoint');
+                $sparql->baseUrl = Config::get('sparqlmodel.endpoint');
 
                 if(!$logicDelete)
                 {
                     //Real delete
-                    $sparql->delete(Config::get('api.graph'), '<' . $this->identifier . '> ?x ?y')
+                    $sparql->delete(Config::get('sparqlmodel.graph'), '<' . $this->identifier . '> ?x ?y')
                             ->where('<' . $this->identifier . '>', '?x', '?y');
                 }
                 else
                 {
                     //Logic Delete
-                    $sparql->delete(Config::get('api.graph'), '<' . $this->identifier . '> <http://semreco/property/status> ?y')
-                            ->where('<' . $this->identifier . '>', '<http://semreco/property/status>', '?y');
+                    $sparql->delete(Config::get('sparqlmodel.graph'), '<' . $this->identifier . '> <' . Config::get('sparqlmodel.status') . '> ?y')
+                            ->where('<' . $this->identifier . '>', '<' . Config::get('sparqlmodel.status') . '>', '?y');
                 }
 
                 $data = $sparql->launch();
@@ -265,9 +272,9 @@ class SPARQLModel implements JsonableInterface, ArrayableInterface {
                 if($logicDelete)
                 {
                     $sparql2 = new SPARQL();
-                    $sparql2->baseUrl = Config::get('api.endpoint');
-                    $sparql2->insert(Config::get('api.graph'))
-                            ->where('<' . $this->identifier . '>', '<http://semreco/property/status>', 2)->launch();
+                    $sparql2->baseUrl = Config::get('sparqlmodel.endpoint');
+                    $sparql2->insert(Config::get('sparqlmodel.graph'))
+                            ->where('<' . $this->identifier . '>', '<' . Config::get('sparqlmodel.status') . '>', 2)->launch();
                 }
 
                 $this->inStore = false;
@@ -292,8 +299,8 @@ class SPARQLModel implements JsonableInterface, ArrayableInterface {
                 if($map == null) return;
 
                 $sparql = new SPARQL();
-                $sparql->baseUrl = Config::get('api.endpoint');
-                $sparql->insert(Config::get('api.graph'))
+                $sparql->baseUrl = Config::get('sparqlmodel.endpoint');
+                $sparql->insert(Config::get('sparqlmodel.graph'))
                         ->where('<' . $this->identifier . '>', '<' . $map . '>', '<' . $object->identifier . '>')
                         ->launch();
         }

@@ -20,14 +20,18 @@ it will add the package in your project.
 
 ### Configuration
 
-This model need some configurations to work. Create a 'api.php' file in app/config and add this arry :
+This model need some configurations to work. Create a 'sparqlmodel.php' file in app/config and add this arry :
 
         <?php
 
         return array(
 
                 'endpoint' => 'http://localhost:8890/sparql',
-                'graph' => 'http://localhost:8890/DAV'
+                'graph' => 'http://localhost:8890/DAV',
+
+                'status' => 'http://uri.for/property/status',
+                'created' => 'http://uri.for/property/created',
+                'updated' => 'http://uri.for/property/updated'
         );
 
 The **endpoint** is the URL to communicate with the graph database through SPARQL, and **graph** is the URI of the graph that you are using for your application.
