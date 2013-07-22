@@ -140,6 +140,11 @@ class SPARQLModel implements JsonableInterface, ArrayableInterface {
 
                         $data =  $sparql->launch();
 
+                        if(!isset($data['results']) || !isset($data['results']['bindings']))
+                        {
+                            return;
+                        }
+
                         foreach ($data['results']['bindings'] as $value) 
                         {
                                 $found = false;
@@ -235,10 +240,11 @@ class SPARQLModel implements JsonableInterface, ArrayableInterface {
 
                 if($this::$status) $sparql->where('<' . $this->identifier . '>', '<' . Config::get('sparqlmodel.status') . '>', 1);
 
-                $date = date('Y-m-d H:i:s', time());
+                //$date = date('Y-m-d H:i:s', time());
+                $date = date('c', time());
 
-                if(!$this->inStore) $sparql->where('<' . $this->identifier . '>', '<' . Config::get('sparqlmodel.created') . '>', "'".$date."'");
-                $sparql->where('<' . $this->identifier . '>', '<' . Config::get('sparqlmodel.updated') . '>', "'".$date."'");
+                if(!$this->inStore) $sparql->where('<' . $this->identifier . '>', '<' . Config::get('sparqlmodel.created') . '>', '"'.$date.'"^^xsd:dateTime');
+                $sparql->where('<' . $this->identifier . '>', '<' . Config::get('sparqlmodel.updated') . '>', '"'.$date.'"^^xsd:dateTime');
 
                 $data = $sparql->launch();
 
