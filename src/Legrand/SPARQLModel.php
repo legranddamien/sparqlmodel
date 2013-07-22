@@ -28,15 +28,16 @@ use Legrand\SPARQL;
 
 class SPARQLModel implements JsonableInterface, ArrayableInterface {
 
-        protected static $mapping       = [];
-        protected static $multiMapping  = [];
+        protected static $mapping           = [];
+        protected static $multiMapping      = [];
 
-        protected static $baseURI       = null;
-        protected static $type          = null;
-        protected static $status        = true;
+        protected static $baseURI           = null;
+        protected static $type              = null;
+        protected static $status            = true;
+        protected static $dateProperties    = []; 
 
-        public $identifier              = null;
-        public $inStore                 = false;
+        public $identifier                  = null;
+        public $inStore                     = false;
 
         public function select()
         {
@@ -225,7 +226,8 @@ class SPARQLModel implements JsonableInterface, ArrayableInterface {
                 {
                         if(isset($this->$property))
                         { 
-                            $p = (is_string($this->$property)) ? "'" . $this->$property . "'" : $this->$property;
+                            if(in_array($property, $this::$dateProperties)) $p = '"' . $this->$property . '"^^xsd:dateTime';
+                            else $p = (is_string($this->$property)) ? "'" . $this->$property . "'" : $this->$property;
                             $sparql->where('<' . $this->identifier . '>', '<' . $uri . '>', $p);
                         }
                 }
