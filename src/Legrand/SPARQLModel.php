@@ -306,10 +306,18 @@ class SPARQLModel implements JsonableInterface, ArrayableInterface {
 
                 if($map == null) return;
 
+                $sparqlD = new SPARQL();
+                $sparqlD->baseUrl = Config::get('sparqlmodel.endpoint');
+                $sparqlD->delete(Config::get('sparqlmodel.graph'), '<' . $this->identifier . '> <' . Config::get('sparqlmodel.updated') . '> ?y')
+                            ->where('<' . $this->identifier . '>', '<' . Config::get('sparqlmodel.updated') . '>', '?y')->launch();
+
+                $date = date('c', time());
+
                 $sparql = new SPARQL();
                 $sparql->baseUrl = Config::get('sparqlmodel.endpoint');
                 $sparql->insert(Config::get('sparqlmodel.graph'))
                         ->where('<' . $this->identifier . '>', '<' . $map . '>', '<' . $object->identifier . '>')
+                        ->where('<' . $this->identifier . '>', '<' . Config::get('sparqlmodel.updated') . '>', '"'.$date.'"^^xsd:dateTime')
                         ->launch();
         }
 
